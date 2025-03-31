@@ -1,21 +1,20 @@
-
 name: Build and Publish a Container Image
 
 on:
   push:
     branches:
       - main
+
 env:
   IMAGE_NAME: kraftnetes-operator
 
 jobs:
-  
   push:
     runs-on: ubuntu-latest
     permissions:
       packages: write
       contents: read
-      
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,14 +23,12 @@ jobs:
 
       - name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        
+
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          [ "$VERSION" == "main" ] && VERSION=latest
+          VERSION=main-${GITHUB_RUN_ID}
           echo IMAGE_ID=$IMAGE_ID
           echo VERSION=$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
