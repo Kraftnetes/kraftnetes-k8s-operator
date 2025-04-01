@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
@@ -27,17 +27,17 @@ import (
 // GameServerSpec defines the desired state of GameServer
 type GameServerSpec struct {
 	Game        string                      `json:"game"`
-  VolumeSize  string                      `json:"volumeSize,omitempty" default:"10Gi"`
-  Filebrowser *bool                       `json:"filebrowser,omitempty" default:"true"`
-  Console     *bool                       `json:"console,omitempty" default:"true"`
-  Env         []corev1.EnvVar             `json:"env,omitempty"`
-  Resources   corev1.ResourceRequirements `json:"resources,omitempty"`
+	VolumeSize  string                      `json:"volumeSize,omitempty" default:"10Gi"`
+	Filebrowser *bool                       `json:"filebrowser,omitempty" default:"true"`
+	Console     *bool                       `json:"console,omitempty" default:"true"`
+	Env         []corev1.EnvVar             `json:"env,omitempty"`
+	Resources   corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 // GameServerStatus defines the observed state of GameServer
 type GameServerStatus struct {
 	State   string `json:"state,omitempty"`
-  Message string `json:"message,omitempty"`
+	Message string `json:"message,omitempty"`
 }
 
 // +kubebuilder:object:root=true

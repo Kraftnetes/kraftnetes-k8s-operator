@@ -1,9 +1,27 @@
 apiVersion: kraftnetes.com/v1alpha1
 kind: GameServer
 metadata:
+  name: minecraft-1
   labels:
-    app.kubernetes.io/name: k8s-operator
-    app.kubernetes.io/managed-by: kustomize
-  name: gameserver-sample
+    something: idk
 spec:
-  # TODO(user): Add fields here
+  game: minecraft
+  volumeSize: 10Gi #default = 10Gi
+  filebrowser: true #default = true
+  console: true #default = true
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: JAVA_OPTS
+      value: "-Xmx1G -Xms1G"
+    - name: VERSION
+      value: '1.21.5'
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+  resources:
+    requests:
+      cpu: 1000m #default = 1000m
+      memory: 1Gi #default = 1Gi
+    limits:
+      cpu: 2000m #default = 2000m
+      memory: 1200Mi #default = 2Gi
