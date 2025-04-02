@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"math/rand"
 
 	"github.com/Kraftnetes/k8s-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +18,8 @@ import (
 func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	podName := fmt.Sprintf("gs-%s-pod", gs.Name)
+	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
+	hostPort := resolveHostPort()
 	pod := &corev1.Pod{}
 	if err := r.Get(ctx, types.NamespacedName{Name: podName, Namespace: gs.Namespace}, pod); err == nil {
 		return ctrl.Result{}, nil
@@ -44,6 +47,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 					Stdin: true,
 					Ports: []corev1.ContainerPort{{
 						ContainerPort: 25565,
+						HostPort:      hostPort,
 						Name:          "minecraft",
 						Protocol:      corev1.ProtocolTCP,
 					}},
@@ -58,7 +62,9 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 			Volumes: []corev1.Volume{{
 				Name: "game-data",
 				VolumeSource: corev1.VolumeSource{
-					EmptyDir: &corev1.EmptyDirVolumeSource{},
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: pvcName,
+					},
 				},
 			}},
 		},
@@ -78,4 +84,8 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 	r.Recorder.Eventf(gs, corev1.EventTypeNormal, "PodCreated", "Created Pod %s", pod.Name)
 	logger.Info("Created Pod", "name", pod.Name)
 	return ctrl.Result{}, nil
+}
+
+func resolveHostPort() int32 {
+	return rand.Int31n(3333) + 30000
 }

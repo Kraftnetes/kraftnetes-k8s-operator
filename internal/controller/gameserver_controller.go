@@ -47,8 +47,9 @@ func (r *GameServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *GameServerReconciler) subReconcilers() []func(context.Context, *v1alpha1.GameServer) (ctrl.Result, error) {
 	return []func(context.Context, *v1alpha1.GameServer) (ctrl.Result, error){
 		r.reconcileInitialStatus,
+		//r.reconcileService,
+		r.reconcilePvc,
 		r.reconcilePod,
-		r.reconcileService,
 		r.updateStatus,
 	}
 }
@@ -59,6 +60,6 @@ func (r *GameServerReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.GameServer{}).
 		Owns(&corev1.Pod{}).
-		Owns(&corev1.Service{}).
+		//Owns(&corev1.Service{}).
 		Complete(r)
 }
