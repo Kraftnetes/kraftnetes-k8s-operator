@@ -7,6 +7,7 @@ on:
 
 env:
   IMAGE_NAME: kraftnetes-operator
+  NEW_TAG: main-${{ github.run_id }}
 
 jobs:
   push:
@@ -21,15 +22,33 @@ jobs:
       - name: Build image
         run: docker build . --file Dockerfile --tag $IMAGE_NAME --label "runnumber=${GITHUB_RUN_ID}"
 
-      - name: Log in to registry
+      - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Push image
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          VERSION=main-${GITHUB_RUN_ID}
-          echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          echo "IMAGE_ID=$IMAGE_ID"
+          echo "NEW_TAG=$NEW_TAG"
+          docker tag $IMAGE_NAME $IMAGE_ID:$NEW_TAG
+          docker push $IMAGE_ID:$NEW_TAG
+
+      - name: Checkout GitOps Repository
+        run: |
+          git clone https://x-access-token:${{ secrets.GITOPS_REPO_TOKEN }}@github.com/Kraftnetes/kraftnetes-gitops.git
+          cd kraftnetes-gitops
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Update the tag in the GitOps Repository
+        run: |
+          cd kraftnetes-gitops/infra/kraftnetes-operator/manager
+          sed -i "s|newTag: \".*\"|newTag: \"${NEW_TAG}\"|" kustomization.yaml
+
+      - name: Commit and Push Changes
+        run: |
+          cd kraftnetes-gitops
+          git add infra/kraftnetes-operator/manager/kustomization.yaml
+          git commit -m "chore: update controller tag to ${NEW_TAG}"
+          git push https://x-access-token:${{ secrets.GITOPS_REPO_TOKEN }}@github.com/Kraftnetes/kraftnetes-gitops.git main
