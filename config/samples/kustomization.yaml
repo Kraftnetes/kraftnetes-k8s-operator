@@ -2,4 +2,6 @@
 resources:
 - v1alpha1_gameserver.yaml
 - _v1alpha1_gameserver.yaml
+- v1alpha1_gamedefinition.yaml
+- _v1alpha1_gamedefinition.yaml
 # +kubebuilder:scaffold:manifestskustomizesamples

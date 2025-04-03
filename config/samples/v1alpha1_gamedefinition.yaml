@@ -1,0 +1,94 @@
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameDefinition
+metadata:
+  name: minecraft-def
+spec:
+  game: minecraft
+  image: itzg/minecraft-server:latest
+  filebrowser: true 
+
+  ### IGNORE FOR NOW: stopStrategy: #connected to pod lifecycle possibly. at least the cmd one. dk about the stdin
+  ### IGNORE FOR NOW:   stdin: "stop" #or even "server stop" type should work
+  ### IGNORE FOR NOW:   #cmd: ["some","command","to","stop","the","server"]
+  ### IGNORE FOR NOW:   shutdownGracePeriod: 300s #default = never
+  ### IGNORE FOR NOW: restartStrategy: 
+  ### IGNORE FOR NOW:   cmd: ["some","command","to","restart","the","server"]
+
+  storage:
+    enabled: true
+    defaultSize: 10Gi
+
+  ports: #certain port(s) let's say 8077 will always be taken by filebrowser (whether enabled or not it should not be used)
+    - name: minecraft
+      containerPort: 25565
+      protocol: TCP
+      type: HostPort #Options: HostPort |NodePort | ClusterIP
+  
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+    ## MUST BE IN GAME SERVER YAML FILE : - name: JAVA_OPTS
+    ## MUST BE IN GAME SERVER YAML FILE :   value: "-Xmx1G -Xms1G"
+    ## MUST BE IN GAME SERVER YAML FILE : - name: VERSION
+    ## MUST BE IN GAME SERVER YAML FILE :   value: '1.21.5'
+    
+  profiles: #profiles can override defaults. profiles can have all the attribute of the gamedef EXCEPT game and profiles obvi (duh)
+    default: vanilla
+    values:
+      - name: vanilla
+        env:
+          - name: VERSION
+            value: '1.21.5'
+      - name: vanilla-old
+        filebrowser: false
+        env:
+          - name: VERSION
+            value: '1.21.4'
+---
+
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameDefinition
+metadata:
+  name: minecraft
+spec:
+  game: minecraft
+  image: itzg/minecraft-server:latest
+  filebrowser: true 
+
+  storage:
+    enabled: true
+    defaultSize: 10Gi
+
+  ports:
+    - name: minecraft
+      containerPort: 25565
+      protocol: TCP
+      type: HostPort
+  
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+  profiles: #profiles can override defaults. profiles can have all the attribute of the gamedef EXCEPT game and profiles obvi (duh)
+    default: vanilla
+    values:
+      - name: vanilla
+        env:
+          - name: EULA
+            value: "TRUE"
+          - name: CREATE_CONSOLE_IN_PIPE
+            value: 'true'
+          - name: VERSION
+            value: '1.21.5'
+      - name: vanilla-old
+        filebrowser: false
+        env:
+          - name: EULA
+            value: "TRUE"
+          - name: CREATE_CONSOLE_IN_PIPE
+            value: 'true'
+          - name: VERSION
+            value: '1.21.4'

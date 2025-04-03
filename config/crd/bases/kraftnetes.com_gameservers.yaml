@@ -162,6 +162,8 @@ spec:
                 type: boolean
               game:
                 type: string
+              profile:
+                type: string
               resources:
                 description: ResourceRequirements describes the compute resource requirements.
                 properties:
@@ -225,6 +227,7 @@ spec:
                 type: string
             required:
             - game
+            - profile
             type: object
           status:
             description: GameServerStatus defines the observed state of GameServer

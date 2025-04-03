@@ -20,6 +20,7 @@ rules:
 - apiGroups:
   - kraftnetes.com
   resources:
+  - gamedefinitions
   - gameservers
   verbs:
   - create
@@ -32,12 +33,14 @@ rules:
 - apiGroups:
   - kraftnetes.com
   resources:
+  - gamedefinitions/finalizers
   - gameservers/finalizers
   verbs:
   - update
 - apiGroups:
   - kraftnetes.com
   resources:
+  - gamedefinitions/status
   - gameservers/status
   verbs:
   - get

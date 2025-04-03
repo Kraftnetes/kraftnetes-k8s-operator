@@ -1,0 +1,31 @@
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameServer
+metadata:
+  name: minecraft-gs-1
+  labels:
+    something: idk
+spec:
+  game: minecraft
+  volumeSize: 10Gi #default = 10Gi
+  filebrowser: true #default = true
+  console: true #default = true
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: ohio
+      valueFrom:
+        configMapKeyRef:
+          name: mc-config
+          key: ohio
+    - name: skibidi
+      valueFrom:
+        secretKeyRef:
+          name: mc-secret
+          key: skibidi
+  resources:
+    requests:
+      cpu: 1000m #default = 1000m
+      memory: 1Gi #default = 1Gi
+    limits:
+      cpu: 2000m #default = 2000m
+      memory: 2Gi #default = 2Gi

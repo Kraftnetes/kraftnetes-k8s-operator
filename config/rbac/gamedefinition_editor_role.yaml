@@ -1,0 +1,27 @@
+# permissions for end users to edit gamedefinitions.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: k8s-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: gamedefinition-editor-role
+rules:
+- apiGroups:
+  - kraftnetes.com
+  resources:
+  - gamedefinitions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - kraftnetes.com
+  resources:
+  - gamedefinitions/status
+  verbs:
+  - get

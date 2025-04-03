@@ -19,4 +19,12 @@ resources:
   kind: GameServer
   path: github.com/Kraftnetes/k8s-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: kraftnetes.com
+  kind: GameDefinition
+  path: github.com/Kraftnetes/k8s-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

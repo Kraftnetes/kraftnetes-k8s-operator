@@ -27,6 +27,7 @@ import (
 // GameServerSpec defines the desired state of GameServer
 type GameServerSpec struct {
 	Game        string                      `json:"game"`
+	Profile     string                      `json:"profile"` 
 	VolumeSize  string                      `json:"volumeSize,omitempty" default:"10Gi"`
 	Filebrowser *bool                       `json:"filebrowser,omitempty" default:"true"`
 	Console     *bool                       `json:"console,omitempty" default:"true"`

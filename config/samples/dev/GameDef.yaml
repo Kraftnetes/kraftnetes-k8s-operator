@@ -1,0 +1,63 @@
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameDefinition
+metadata:
+  name: minecraft-def
+  labels:
+    something: idk
+spec:
+  game: minecraft 
+  image: cr.based.nu/minecraft:1.21.5
+  filebrowser: true #can be overridden in the GameServer CR - This will make it so there's gonna be a sidecart container to play file browser. it'll generate ClusterIP service and ingres too
+  #console: true #can be overridden in the GameServer CR - This will set "stdin" and "tty" values to true on the game container def so there can be direct terminal comms #nvm its actually stupid for this to be optional. should always be true :D
+
+  stopStrategy: #connected to pod lifecycle possibly. at least the cmd one. dk about the stdin
+    stdin: "stop" #or even "server stop" type should work
+    #cmd: ["some","command","to","stop","the","server"]
+    shutdownGracePeriod: 300s #default = never
+
+  restartStrategy: 
+    cmd: ["some","command","to","restart","the","server"]
+
+  storage:
+    enabled: true
+    defaultSize: 10Gi
+
+  ports: #certain port(s) let's say 8077 will always be taken by filebrowser (whether enabled or not it should not be used)
+    - name: minecraft
+      containerPort: 25565
+      protocol: TCP
+      type: HostPort #Options: HostPort |NodePort | ClusterIP
+  
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: JAVA_OPTS
+      value: "-Xmx1G -Xms1G"
+    - name: VERSION
+      value: '1.21.5'
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+    - name: ohio
+      valueFrom:
+        configMapKeyRef:
+          name: mc-config
+          key: ohio
+    - name: skibidi
+      valueFrom:
+        secretKeyRef:
+          name: mc-secret
+          key: skibidi
+
+  profiles: #profiles can override defaults. profiles can have all the attribute of the gamedef
+    default: vanilla
+    values:
+      - name: vanilla
+        env:
+          - name: type
+            value: vanilla
+      - name: paper
+        image: someOtherImage:latest
+        filebrowser: false
+        env:
+          - name: type
+            value: paper
