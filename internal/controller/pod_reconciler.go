@@ -21,6 +21,7 @@ import (
 func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	podName := fmt.Sprintf("gs-%s-pod", gs.Name)
+	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
 
 	// Check if the Pod already exists.
 	pod := &corev1.Pod{}
@@ -46,11 +47,9 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 	mergedConfig := gameDef.Spec
 
 	// Determine which profile to apply.
-	// Assume gs.Spec.Profile exists (optional). If not provided, use the GameDefinition default if defined.
-	profileName := ""
-	if gs.Spec.Profile != "" {
-		profileName = gs.Spec.Profile
-	} else if gameDef.Spec.Profiles != nil && gameDef.Spec.Profiles.Default != "" {
+	// Profile is optional in GameServer. If provided use it, otherwise, use the default profile from GameDefinition if defined.
+	profileName := gs.Spec.Profile
+	if profileName == "" && gameDef.Spec.Profiles != nil && gameDef.Spec.Profiles.Default != "" {
 		profileName = gameDef.Spec.Profiles.Default
 	}
 
@@ -65,6 +64,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 	}
 
 	// If a profile was found, patch the base configuration with its settings.
+	// For most fields we override, but for Env we merge.
 	if chosenProfile != nil {
 		if chosenProfile.Image != "" {
 			mergedConfig.Image = chosenProfile.Image
@@ -82,15 +82,14 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		if len(chosenProfile.Ports) > 0 {
 			mergedConfig.Ports = chosenProfile.Ports
 		}
-		if len(chosenProfile.Env) > 0 {
-			mergedConfig.Env = chosenProfile.Env
-		}
+		// Merge profile Env with the base Env.
+		mergedConfig.Env = mergeEnvVars(mergedConfig.Env, chosenProfile.Env)
 	}
 
 	// Finally, override with GameServer-specific settings.
-	// Here we merge environment variables (GameServer values take precedence)
-	mergedEnv := mergeEnvVars(mergedConfig.Env, gs.Spec.Env)
-	mergedResources := gs.Spec.Resources
+	// Merge environment variables from GameServer.
+	finalEnv := mergeEnvVars(mergedConfig.Env, gs.Spec.Env)
+	finalResources := gs.Spec.Resources
 
 	// Process container ports: if a port's type is HostPort, assign a random host port.
 	var containerPorts []corev1.ContainerPort
@@ -107,7 +106,6 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 	}
 
 	// Create the Pod definition.
-	// Note: We completely ignore volume configuration as it is handled in a separate reconciler.
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -125,8 +123,24 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 					TTY:       true,
 					Stdin:     true,
 					Ports:     containerPorts,
-					Env:       mergedEnv,
-					Resources: mergedResources,
+					Env:       finalEnv,
+					Resources: finalResources,
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "game-data",
+							MountPath: "/data",
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "game-data",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: pvcName,
+						},
+					},
 				},
 			},
 		},
