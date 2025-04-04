@@ -28,12 +28,20 @@ spec:
             type: string
           inputs:
             additionalProperties:
-              description: |-
-                GameDefinitionInput defines an input variable for a GameDefinition.
-                The Default field can be a string, number, or bool.
+              description: GameDefinitionInput defines an input variable for a GameDefinition.
               properties:
                 default:
-                  x-kubernetes-preserve-unknown-fields: true
+                  description: |-
+                    AnyVal is just a placeholder for your defaults.
+                    If you need to store typed default values (bool/string/int), you can do
+                    something like an interface or your own custom union type. For the sake
+                    of example, we keep it simple as a raw string. If you want to allow number,
+                    bool, etc., you can define a more complex type that uses json.Unmarshaler
+                    or apiextensionsv1.JSON. (It depends on how you handle defaults.)
+                  properties:
+                    value:
+                      type: string
+                  type: object
                 description:
                   type: string
                 required:
@@ -41,7 +49,6 @@ spec:
                 type:
                   type: string
               type: object
-            description: Inputs defines the input variables for the GameDefinition.
             type: object
           kind:
             description: |-
@@ -174,18 +181,30 @@ spec:
                   type: object
                 type: array
               filebrowser:
-                type: boolean
+                description: |-
+                  BoolOrString is a custom type that can hold either a boolean or a string value.
+                  This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
+
+                  Example usages:
+                    filebrowser: true
+                    filebrowser: "true"
+                    filebrowser: "some-placeholder"
+                type: object
               game:
                 type: string
               image:
                 type: string
               ports:
                 items:
-                  description: GamePort defines networking ports
+                  description: |-
+                    GamePort defines networking ports.
+                    We use IntOrString for containerPort so that user can specify "25565" or 25565
                   properties:
                     containerPort:
-                      format: int32
-                      type: integer
+                      anyOf:
+                      - type: integer
+                      - type: string
+                      x-kubernetes-int-or-string: true
                     name:
                       type: string
                     protocol:
@@ -195,8 +214,6 @@ spec:
                   required:
                   - containerPort
                   - name
-                  - protocol
-                  - type
                   type: object
                 type: array
               profiles:
@@ -206,7 +223,9 @@ spec:
                     type: string
                   values:
                     items:
-                      description: GameProfile defines an override profile for a GameDefinition.
+                      description: |-
+                        GameProfile defines an override profile for a GameDefinition.
+                        Notice we use BoolOrString for filebrowser, so it can be `true` or `"somePlaceholder"`
                       properties:
                         env:
                           items:
@@ -328,18 +347,30 @@ spec:
                             type: object
                           type: array
                         filebrowser:
-                          type: boolean
+                          description: |-
+                            BoolOrString is a custom type that can hold either a boolean or a string value.
+                            This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
+
+                            Example usages:
+                              filebrowser: true
+                              filebrowser: "true"
+                              filebrowser: "some-placeholder"
+                          type: object
                         image:
                           type: string
                         name:
                           type: string
                         ports:
                           items:
-                            description: GamePort defines networking ports
+                            description: |-
+                              GamePort defines networking ports.
+                              We use IntOrString for containerPort so that user can specify "25565" or 25565
                             properties:
                               containerPort:
-                                format: int32
-                                type: integer
+                                anyOf:
+                                - type: integer
+                                - type: string
+                                x-kubernetes-int-or-string: true
                               name:
                                 type: string
                               protocol:
@@ -349,13 +380,11 @@ spec:
                             required:
                             - containerPort
                             - name
-                            - protocol
-                            - type
                             type: object
                           type: array
                         restartStrategy:
                           description: RestartStrategy controls how to restart the
-                            server (e.g., via in-game command)
+                            server
                           properties:
                             cmd:
                               items:
@@ -382,7 +411,15 @@ spec:
                             defaultSize:
                               type: string
                             enabled:
-                              type: boolean
+                              description: |-
+                                BoolOrString is a custom type that can hold either a boolean or a string value.
+                                This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
+
+                                Example usages:
+                                  filebrowser: true
+                                  filebrowser: "true"
+                                  filebrowser: "some-placeholder"
+                              type: object
                           required:
                           - defaultSize
                           - enabled
@@ -391,12 +428,9 @@ spec:
                       - name
                       type: object
                     type: array
-                required:
-                - default
                 type: object
               restartStrategy:
-                description: RestartStrategy controls how to restart the server (e.g.,
-                  via in-game command)
+                description: RestartStrategy controls how to restart the server
                 properties:
                   cmd:
                     items:
@@ -421,7 +455,15 @@ spec:
                   defaultSize:
                     type: string
                   enabled:
-                    type: boolean
+                    description: |-
+                      BoolOrString is a custom type that can hold either a boolean or a string value.
+                      This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
+
+                      Example usages:
+                        filebrowser: true
+                        filebrowser: "true"
+                        filebrowser: "some-placeholder"
+                    type: object
                 required:
                 - defaultSize
                 - enabled

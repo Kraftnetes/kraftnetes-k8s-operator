@@ -59,5 +59,5 @@ jobs:
         run: |
           cd kraftnetes-gitops
           git add infra/kraftnetes-operator
-          git commit -m "ci: audo update controller tag and crds"
+          git commit -m "ci: auto update controller tag and crds"
           git push https://x-access-token:${{ secrets.GITOPS_REPO_TOKEN }}@github.com/Kraftnetes/kraftnetes-gitops.git main

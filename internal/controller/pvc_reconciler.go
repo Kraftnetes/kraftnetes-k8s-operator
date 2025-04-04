@@ -18,7 +18,7 @@ import (
 func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
-	if !gameDef.Spec.Storage.Enabled {
+	if !gameDef.Spec.Storage.Enabled.BoolVal {
 		logger.Info("Storage disabled for %s. Skipping...", gameDef.Name)
 		r.Recorder.Eventf(gs, corev1.EventTypeNormal, "Skipped creating pvc for %s", gs.Name)
 		return ctrl.Result{}, nil

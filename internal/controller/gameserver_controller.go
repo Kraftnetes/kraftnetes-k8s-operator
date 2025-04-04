@@ -98,8 +98,8 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 		// If no value was provided by the GameServer, use the default if available.
 		if value == "" {
 			// Check if a default exists (non-empty raw JSON).
-			if len(input.Default.Raw) > 0 {
-				value = jsonValueToString(input.Default)
+			if len(input.Default.Value) > 0 {
+				value = input.Default.Value //jsonValueToString(input.Default.Value)
 			} else {
 				return spec, fmt.Errorf("variable %q is required but not provided and no default is available", key)
 			}

@@ -87,7 +87,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 	var containerPorts []corev1.ContainerPort
 	for _, gp := range mergedConfig.Ports {
 		cp := corev1.ContainerPort{
-			ContainerPort: gp.ContainerPort,
+			ContainerPort: gp.ContainerPort.IntVal,
 			Name:          gp.Name,
 			Protocol:      corev1.Protocol(gp.Protocol),
 		}
@@ -108,7 +108,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		Resources: finalResources,
 	}
 
-	if gameDef.Spec.Storage.Enabled {
+	if gameDef.Spec.Storage.Enabled.BoolVal {
 		gameContainer.VolumeMounts = []corev1.VolumeMount{
 			{
 				Name:      "game-data",
@@ -121,7 +121,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		Containers: []corev1.Container{gameContainer},
 	}
 
-	fileBrowserEnabled := gameDef.Spec.FileBrowser
+	fileBrowserEnabled := gameDef.Spec.FileBrowser.BoolVal
 	if gs.Spec.Filebrowser != nil {
 		fileBrowserEnabled = *gs.Spec.Filebrowser
 	}
@@ -151,7 +151,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		podSpec.Containers = append(podSpec.Containers, fileBrowserContainer)
 	}
 
-	if gameDef.Spec.Storage.Enabled {
+	if gameDef.Spec.Storage.Enabled.BoolVal {
 		podSpec.Volumes = []corev1.Volume{
 			{
 				Name: "game-data",
