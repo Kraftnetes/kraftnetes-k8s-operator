@@ -164,6 +164,17 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 	if err := json.Unmarshal([]byte(specStr), &resolvedSpec); err != nil {
 		return spec, fmt.Errorf("failed to unmarshal resolved GameDefinition spec: %w", err)
 	}
+	
+	fmt.Printf("RESOLVED RAW SPEC STRING = %s\n", specStr)
+
+	// Now marshal *resolvedSpec* again, back into JSON, and print that too:
+	resolvedBytes, err := json.Marshal(resolvedSpec)
+	if err != nil {
+		fmt.Printf("Failed to marshal resolvedSpec for debug print: %v\n", err)
+	} else {
+		fmt.Printf("RESOLVED OBJECT (marshalled back to JSON) = %s\n", string(resolvedBytes))
+	}
+
 	return resolvedSpec, nil
 }
 
