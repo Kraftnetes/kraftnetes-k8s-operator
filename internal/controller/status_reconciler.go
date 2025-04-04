@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *GameServerReconciler) updateStatus(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
+func (r *GameServerReconciler) updateStatus(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 
 	desired := gs.DeepCopy()
@@ -29,7 +29,7 @@ func (r *GameServerReconciler) updateStatus(ctx context.Context, gs *v1alpha1.Ga
 	return ctrl.Result{}, nil
 }
 
-func (r *GameServerReconciler) reconcileInitialStatus(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
+func (r *GameServerReconciler) reconcileInitialStatus(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	if gs.Status.State != "" {
 		return ctrl.Result{}, nil
 	}

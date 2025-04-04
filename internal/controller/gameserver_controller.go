@@ -2,10 +2,12 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Kraftnetes/k8s-operator/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -31,8 +33,16 @@ func (r *GameServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
+	gameDef := &v1alpha1.GameDefinition{}
+	if err := r.Get(ctx, types.NamespacedName{Name: gameServer.Spec.Game}, gameDef); err != nil {
+		logger.Error(err, "GameDefinition not found", "game", gameServer.Spec.Game)
+		r.Recorder.Event(gameServer, corev1.EventTypeWarning, "GameDefinitionNotFound", fmt.Sprintf("GameDefinition %s not found", gameServer.Spec.Game))
+		// Requeue until the GameDefinition is available.
+		return ctrl.Result{Requeue: true}, nil
+	}
+
 	for _, sub := range r.subReconcilers() {
-		if res, err := sub(ctx, gameServer); err != nil || !res.IsZero() {
+		if res, err := sub(ctx, gameServer, gameDef); err != nil || !res.IsZero() {
 			if err != nil {
 				logger.Error(err, "Subreconciler failed")
 				r.Recorder.Event(gameServer, corev1.EventTypeWarning, "SubreconcileError", err.Error())
@@ -44,10 +54,10 @@ func (r *GameServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
-func (r *GameServerReconciler) subReconcilers() []func(context.Context, *v1alpha1.GameServer) (ctrl.Result, error) {
-	return []func(context.Context, *v1alpha1.GameServer) (ctrl.Result, error){
+func (r *GameServerReconciler) subReconcilers() []func(context.Context, *v1alpha1.GameServer, *v1alpha1.GameDefinition) (ctrl.Result, error) {
+	return []func(context.Context, *v1alpha1.GameServer, *v1alpha1.GameDefinition) (ctrl.Result, error){
 		r.reconcileInitialStatus,
-		//r.reconcileService,
+		r.reconcileService,
 		r.reconcilePvc,
 		r.reconcilePod,
 		r.updateStatus,

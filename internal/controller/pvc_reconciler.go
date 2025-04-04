@@ -15,8 +15,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
+func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
+
+	if !gameDef.Spec.Storage.Enabled {
+		logger.Info("Storage disabled for %s. Skipping...", gameDef.Name)
+		r.Recorder.Eventf(gs, corev1.EventTypeNormal, "Skipped creating pvc for %s", gs.Name)
+		return ctrl.Result{}, nil
+	}
+
 	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
 
 	pvc := &corev1.PersistentVolumeClaim{}
@@ -26,6 +33,16 @@ func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.Ga
 		logger.Error(err, "Failed to get pvc")
 		r.Recorder.Event(gs, corev1.EventTypeWarning, "PvcLookupFailed", err.Error())
 		return ctrl.Result{}, err
+	}
+
+	defaultStorage := "10Gi" //hard coded default storage. can be overriden by game definition or game server 
+
+	if gameDef.Spec.Storage.DefaultSize != "" {
+		defaultStorage = gameDef.Spec.Storage.DefaultSize;
+	}
+
+	if gs.Spec.VolumeSize != "" {
+		defaultStorage = gs.Spec.VolumeSize
 	}
 
 	pvc = &corev1.PersistentVolumeClaim{
@@ -43,7 +60,7 @@ func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.Ga
 			},
 			Resources: corev1.VolumeResourceRequirements{
 				Requests: corev1.ResourceList{
-					corev1.ResourceStorage: resource.MustParse("10Gi"),
+					corev1.ResourceStorage: resource.MustParse(defaultStorage),
 				},
 			},
 		},

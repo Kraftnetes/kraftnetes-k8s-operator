@@ -33,13 +33,22 @@ jobs:
           echo "NEW_TAG=$NEW_TAG"
           docker tag $IMAGE_NAME $IMAGE_ID:$NEW_TAG
           docker push $IMAGE_ID:$NEW_TAG
-
+      
       - name: Checkout GitOps Repository
         run: |
           git clone https://x-access-token:${{ secrets.GITOPS_REPO_TOKEN }}@github.com/Kraftnetes/kraftnetes-gitops.git
           cd kraftnetes-gitops
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
+
+      - name: Run make manifests to generate or update CRDs
+        run: make manifests
+
+      - name: Copy CRD files to GitOps Repository
+        run: |
+          rm -rf kraftnetes-gitops/infra/kraftnetes-operator/crd
+          mkdir -p kraftnetes-gitops/infra/kraftnetes-operator/crd
+          cp -r config/crd/* kraftnetes-gitops/infra/kraftnetes-operator/crd/
 
       - name: Update the tag in the GitOps Repository
         run: |

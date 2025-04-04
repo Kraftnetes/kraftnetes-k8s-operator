@@ -5,6 +5,7 @@ metadata:
 spec:
   game: minecraft
   volumeSize: 15Gi
+  filebrowser: true
   profile: vanilla
   env:
     - name: JAVA_OPTS

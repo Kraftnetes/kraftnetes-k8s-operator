@@ -17,8 +17,9 @@ import (
 
 // reconcilePod creates a Pod for the GameServer resource.
 // It fetches the base configuration from the GameDefinition named in gs.Spec.Game,
-// optionally applies profile overrides, and finally patches in values from the GameServer.
-func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.GameServer) (ctrl.Result, error) {
+// optionally applies profile overrides (merging environment variables),
+// attaches a volume mount, and finally patches in values from the GameServer.
+func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
 	podName := fmt.Sprintf("gs-%s-pod", gs.Name)
 	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
@@ -32,15 +33,6 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		logger.Error(err, "Failed to get Pod")
 		r.Recorder.Event(gs, corev1.EventTypeWarning, "PodLookupFailed", err.Error())
 		return ctrl.Result{}, err
-	}
-
-	// Fetch the GameDefinition. GameDefinition is cluster-scoped.
-	gameDef := &v1alpha1.GameDefinition{}
-	if err := r.Get(ctx, types.NamespacedName{Name: gs.Spec.Game}, gameDef); err != nil {
-		logger.Error(err, "GameDefinition not found", "game", gs.Spec.Game)
-		r.Recorder.Event(gs, corev1.EventTypeWarning, "GameDefinitionNotFound", fmt.Sprintf("GameDefinition %s not found", gs.Spec.Game))
-		// Requeue until the GameDefinition is available.
-		return ctrl.Result{Requeue: true}, nil
 	}
 
 	// Start with the base configuration from GameDefinition.
@@ -105,7 +97,73 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		containerPorts = append(containerPorts, cp)
 	}
 
-	// Create the Pod definition.
+	// ---start pod def
+	gameContainer := corev1.Container{
+		Name:      "game-server",
+		Image:     mergedConfig.Image,
+		TTY:       true,
+		Stdin:     true,
+		Ports:     containerPorts,
+		Env:       finalEnv,
+		Resources: finalResources,
+	}
+
+	if gameDef.Spec.Storage.Enabled {
+		gameContainer.VolumeMounts = []corev1.VolumeMount{
+			{
+				Name:      "game-data",
+				MountPath: "/data",
+			},
+		}
+	}
+
+	podSpec := corev1.PodSpec{
+		Containers: []corev1.Container{gameContainer},
+	}
+
+	fileBrowserEnabled := gameDef.Spec.FileBrowser
+	if gs.Spec.Filebrowser != nil {
+		fileBrowserEnabled = *gs.Spec.Filebrowser
+	}
+
+	if fileBrowserEnabled {
+
+		fileBrowserContainer := corev1.Container{
+			Name:  "filebrowser",
+			Image: "filebrowser/filebrowser",
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: 8077,
+					Protocol:      corev1.ProtocolTCP,
+				},
+			},
+			Args: []string{
+				"--port", "8077",
+			},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      "game-data",
+					MountPath: "/srv",
+				},
+			},
+		}
+
+		podSpec.Containers = append(podSpec.Containers, fileBrowserContainer)
+	}
+
+	if gameDef.Spec.Storage.Enabled {
+		podSpec.Volumes = []corev1.Volume{
+			{
+				Name: "game-data",
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: pvcName,
+					},
+				},
+			},
+		}
+	}
+
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -115,36 +173,9 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 				"gameserver": gs.Name,
 			},
 		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:      "game-server",
-					Image:     mergedConfig.Image,
-					TTY:       true,
-					Stdin:     true,
-					Ports:     containerPorts,
-					Env:       finalEnv,
-					Resources: finalResources,
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      "game-data",
-							MountPath: "/data",
-						},
-					},
-				},
-			},
-			Volumes: []corev1.Volume{
-				{
-					Name: "game-data",
-					VolumeSource: corev1.VolumeSource{
-						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: pvcName,
-						},
-					},
-				},
-			},
-		},
+		Spec: podSpec,
 	}
+	// ---end pod def
 
 	// Set GameServer as the owner of the Pod.
 	if err := controllerutil.SetControllerReference(gs, pod, r.Scheme); err != nil {
@@ -185,3 +216,50 @@ func mergeEnvVars(base, override []corev1.EnvVar) []corev1.EnvVar {
 	}
 	return merged
 }
+
+/*
+
+
+// Create the Pod definition.
+	pod = &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: gs.Namespace,
+			Labels: map[string]string{
+				"app":        "gameserver",
+				"gameserver": gs.Name,
+			},
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{
+				{
+					Name:      "game-server",
+					Image:     mergedConfig.Image,
+					TTY:       true,
+					Stdin:     true,
+					Ports:     containerPorts,
+					Env:       finalEnv,
+					Resources: finalResources,
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      "game-data",
+							MountPath: "/data",
+						},
+					},
+				},
+			},
+			Volumes: []corev1.Volume{
+				{
+					Name: "game-data",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: pvcName,
+						},
+					},
+				},
+			},
+		},
+	}
+
+
+*/

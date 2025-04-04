@@ -227,7 +227,6 @@ spec:
                 type: string
             required:
             - game
-            - profile
             type: object
           status:
             description: GameServerStatus defines the observed state of GameServer

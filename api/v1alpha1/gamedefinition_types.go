@@ -23,15 +23,15 @@ import (
 
 // GameDefinitionSpec defines the desired state of GameDefinition
 type GameDefinitionSpec struct {
-	Game          string                 `json:"game"`
-	Image         string                 `json:"image"`
-	FileBrowser   bool                   `json:"filebrowser,omitempty"`
-	StopStrategy  *StopStrategy          `json:"stopStrategy,omitempty"`
-	RestartStrategy *RestartStrategy    `json:"restartStrategy,omitempty"`
-	Storage       *StorageConfig         `json:"storage,omitempty"`
-	Ports         []GamePort             `json:"ports,omitempty"`
-	Env           []corev1.EnvVar        `json:"env,omitempty"`
-	Profiles      *GameProfiles          `json:"profiles,omitempty"`
+	Game            string           `json:"game"`
+	Image           string           `json:"image"`
+	FileBrowser     bool             `json:"filebrowser,omitempty"`
+	StopStrategy    *StopStrategy    `json:"stopStrategy,omitempty"`
+	RestartStrategy *RestartStrategy `json:"restartStrategy,omitempty"`
+	Storage         *StorageConfig   `json:"storage,omitempty"`
+	Ports           []GamePort       `json:"ports,omitempty"`
+	Env             []corev1.EnvVar  `json:"env,omitempty"`
+	Profiles        *GameProfiles    `json:"profiles,omitempty"`
 }
 
 // StopStrategy controls how the game server is shut down
@@ -63,21 +63,20 @@ type GamePort struct {
 // GameProfiles allows optional predefined profiles
 
 type GameProfiles struct {
-	Default string               `json:"default"`
+	Default string        `json:"default"`
 	Values  []GameProfile `json:"values,omitempty"`
 }
 
 type GameProfile struct {
-	Name          string                 `json:"name"`
-	Image         string                 `json:"image,omitempty"`
-	FileBrowser   bool                   `json:"filebrowser,omitempty"`
-	StopStrategy  *StopStrategy          `json:"stopStrategy,omitempty"`
-	RestartStrategy *RestartStrategy    `json:"restartStrategy,omitempty"`
-	Storage       *StorageConfig         `json:"storage,omitempty"`
-	Ports         []GamePort             `json:"ports,omitempty"`
-	Env           []corev1.EnvVar        `json:"env,omitempty"`
+	Name            string           `json:"name"`
+	Image           string           `json:"image,omitempty"`
+	FileBrowser     bool             `json:"filebrowser,omitempty" default:"false"`
+	StopStrategy    *StopStrategy    `json:"stopStrategy,omitempty"`
+	RestartStrategy *RestartStrategy `json:"restartStrategy,omitempty"`
+	Storage         *StorageConfig   `json:"storage,omitempty"`
+	Ports           []GamePort       `json:"ports,omitempty"`
+	Env             []corev1.EnvVar  `json:"env,omitempty"`
 }
-
 
 // GameDefinitionStatus defines the observed state of GameDefinition
 type GameDefinitionStatus struct {

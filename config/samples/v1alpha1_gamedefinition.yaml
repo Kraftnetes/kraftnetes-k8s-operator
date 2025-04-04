@@ -55,7 +55,7 @@ metadata:
 spec:
   game: minecraft
   image: itzg/minecraft-server:latest
-  filebrowser: true 
+  filebrowser: true
 
   storage:
     enabled: true
