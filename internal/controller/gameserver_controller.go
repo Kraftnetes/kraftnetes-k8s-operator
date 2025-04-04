@@ -144,10 +144,18 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 
 	// Perform placeholder substitution: look for ${key}
 	for key, value := range subs {
-		placeholder := "${" + key + "}"
-		fmt.Printf("[DEBUG] Replacing placeholder: %s -> value: %s\n", placeholder, value)
-		specStr = strings.ReplaceAll(specStr, placeholder, value)
-	}
+    placeholder := "${" + key + "}"
+    fmt.Printf("[DEBUG] Replacing placeholder: %s -> value: %s\n", placeholder, value)
+
+    // Detect if value looks like boolean or number
+    if value == "true" || value == "false" || isNumeric(value) {
+        // Replace placeholder without quotes
+        specStr = strings.ReplaceAll(specStr, "\""+placeholder+"\"", value)
+    } else {
+        // Replace normally
+        specStr = strings.ReplaceAll(specStr, placeholder, value)
+    }
+}
 
 	// Check if any unresolved placeholders remain
 	if strings.Contains(specStr, "${") {
@@ -171,6 +179,11 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 	}
 
 	return resolvedSpec, nil
+}
+
+func isNumeric(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
 }
 
 
