@@ -152,9 +152,14 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 	for key, value := range subs {
 		placeholder := "\"&{" + key + "}\""
 		fmt.Printf("place holder = %s" , placeholder)
+		fmt.Println()
 		fmt.Printf("result before: %s",specStr)
+		fmt.Println()
+		fmt.Printf("value for %s : %s", placeholder ,value)
+		fmt.Println()
 		specStr = strings.ReplaceAll(specStr, placeholder, value)
 		fmt.Printf("result after: %s", specStr)
+		fmt.Println()
 
 	}
 
