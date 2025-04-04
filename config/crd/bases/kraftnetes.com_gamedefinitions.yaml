@@ -17,7 +17,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: GameDefinition is the Schema for the gamedefinitions API
+        description: GameDefinition is the Schema for the gamedefinitions API.
         properties:
           apiVersion:
             description: |-
@@ -26,6 +26,28 @@ spec:
               may reject unrecognized values.
               More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
+          inputs:
+            additionalProperties:
+              description: |-
+                GameDefinitionInput defines an input variable for a GameDefinition.
+                The Default field can be a string, number, or bool.
+              properties:
+                default:
+                  x-kubernetes-preserve-unknown-fields: true
+                description:
+                  type: string
+                required:
+                  type: boolean
+                type:
+                  type: string
+              required:
+              - default
+              - description
+              - required
+              - type
+              type: object
+            description: Inputs defines the input variables for the GameDefinition.
+            type: object
           kind:
             description: |-
               Kind is a string value representing the REST resource this object represents.
@@ -183,11 +205,13 @@ spec:
                   type: object
                 type: array
               profiles:
+                description: GameProfiles allows optional predefined profiles
                 properties:
                   default:
                     type: string
                   values:
                     items:
+                      description: GameProfile defines an override profile for a GameDefinition.
                       properties:
                         env:
                           items:
@@ -369,6 +393,7 @@ spec:
                           - enabled
                           type: object
                       required:
+                      - image
                       - name
                       type: object
                     type: array

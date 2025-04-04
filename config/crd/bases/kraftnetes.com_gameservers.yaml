@@ -162,6 +162,10 @@ spec:
                 type: boolean
               game:
                 type: string
+              inputs:
+                additionalProperties:
+                  x-kubernetes-preserve-unknown-fields: true
+                type: object
               profile:
                 type: string
               resources:

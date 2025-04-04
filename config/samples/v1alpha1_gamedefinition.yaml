@@ -47,7 +47,6 @@ spec:
           - name: VERSION
             value: '1.21.4'
 ---
-
 apiVersion: kraftnetes.com/v1alpha1
 kind: GameDefinition
 metadata:
@@ -77,18 +76,77 @@ spec:
     values:
       - name: vanilla
         env:
-          - name: EULA
-            value: "TRUE"
-          - name: CREATE_CONSOLE_IN_PIPE
-            value: 'true'
           - name: VERSION
             value: '1.21.5'
       - name: vanilla-old
         filebrowser: false
         env:
-          - name: EULA
-            value: "TRUE"
-          - name: CREATE_CONSOLE_IN_PIPE
-            value: 'true'
           - name: VERSION
             value: '1.21.4'
+---
+
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameDefinition
+metadata:
+  name: minecraft
+
+inputs: 
+  version: #this key can be anything. any valid name yaml is valid here, but the content inside it always have these 4 keys
+    required: true
+    default: 1.21.5
+    description: mc version
+    type: string
+  image:
+    required: true
+    description: image
+    type: string
+  fb:
+    required: false
+    type: boolean
+  
+  port:
+    required: true
+    type: number
+    default: 25565
+
+spec:
+  game: minecraft
+  image: ${image}
+  filebrowser: ${fb}
+
+  storage:
+    enabled: true
+    defaultSize: 10Gi
+
+  ports:
+    - name: minecraft
+      containerPort: ${port}
+      protocol: TCP
+      type: HostPort
+  
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+    - name: VERSION
+      value: ${version}
+  profiles: #profiles can override defaults. profiles can have all the attribute of the gamedef EXCEPT game and profiles obvi (duh)
+    default: vanilla
+    values:
+      - name: vanilla
+        env:
+          - name: VERSION
+            value: '1.21.5'
+        ports:
+          - name: minecraft
+            containerPort: ${port}
+            protocol: TCP
+            type: NodePort
+      - name: vanilla-old
+        filebrowser: false
+        env:
+          - name: VERSION
+            value: '1.21.4'
+          - test:
+            value: ${version}

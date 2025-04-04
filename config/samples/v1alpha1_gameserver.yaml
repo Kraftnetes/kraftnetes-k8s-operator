@@ -19,3 +19,18 @@ spec:
     limits:
       cpu: 2000m
       memory: 1200Mi
+---
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameServer
+metadata:
+  name: minecraft-1
+spec:
+  game: minecraft
+  profile: vanilla
+  env:
+    - name: JAVA_OPTS
+      value: "-Xmx1G -Xms1G"
+  resources:
+    limits:
+      memory: 1400Mi
+---
