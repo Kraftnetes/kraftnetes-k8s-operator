@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/Kraftnetes/k8s-operator/api/v1alpha1"
@@ -95,15 +96,55 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 				value = jsonValueToString(j)
 			}
 		}
-		// If no value was provided by the GameServer, use the default if available.
+		// --- If no value was provided by the GameServer, use the default if available.
 		if value == "" {
-			// Check if a default exists (non-empty raw JSON).
-			if len(input.Default.Value) > 0 {
-				value = input.Default.Value //jsonValueToString(input.Default.Value)
-			} else {
-				return spec, fmt.Errorf("variable %q is required but not provided and no default is available", key)
+			var defaultStr string
+			switch input.Type {
+			case "string":
+					// Expect a default string.
+					if input.Default.Type == v1alpha1.AnyValString {
+							defaultStr = input.Default.StrVal
+					} else {
+							// If the default is not a string, fall back to its generic conversion.
+							defaultStr = input.Default.String()
+					}
+			case "number":
+					if input.Default.Type == v1alpha1.AnyValNumber {
+							defaultStr = strconv.FormatFloat(input.Default.NumVal, 'f', -1, 64)
+					} else if input.Default.Type == v1alpha1.AnyValString {
+							// Try to interpret the string as a number.
+							if num, err := strconv.ParseFloat(input.Default.StrVal, 64); err == nil {
+									defaultStr = strconv.FormatFloat(num, 'f', -1, 64)
+							} else {
+									return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
+							}
+					} else {
+							return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
+					}
+			case "boolean":
+					if input.Default.Type == v1alpha1.AnyValBool {
+							defaultStr = strconv.FormatBool(input.Default.BoolVal)
+					} else if input.Default.Type == v1alpha1.AnyValString {
+							// Try to interpret the string as a boolean.
+							if b, err := strconv.ParseBool(input.Default.StrVal); err == nil {
+									defaultStr = strconv.FormatBool(b)
+							} else {
+									return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
+							}
+					} else {
+							return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
+					}
+			default:
+					// Fallback: use AnyVal’s generic String() method.
+					defaultStr = input.Default.String()
 			}
-		}
+			if defaultStr == "" {
+					return spec, fmt.Errorf("variable %q is required but not provided and no default is available", key)
+			}
+			value = defaultStr
+	}
+	
+		// ---
 		subs[key] = value
 	}
 

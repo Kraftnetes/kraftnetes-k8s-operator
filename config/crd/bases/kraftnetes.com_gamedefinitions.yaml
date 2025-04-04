@@ -31,17 +31,7 @@ spec:
               description: GameDefinitionInput defines an input variable for a GameDefinition.
               properties:
                 default:
-                  description: |-
-                    AnyVal is just a placeholder for your defaults.
-                    If you need to store typed default values (bool/string/int), you can do
-                    something like an interface or your own custom union type. For the sake
-                    of example, we keep it simple as a raw string. If you want to allow number,
-                    bool, etc., you can define a more complex type that uses json.Unmarshaler
-                    or apiextensionsv1.JSON. (It depends on how you handle defaults.)
-                  properties:
-                    value:
-                      type: string
-                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
                 description:
                   type: string
                 required:
@@ -50,6 +40,7 @@ spec:
                   type: string
               type: object
             type: object
+            x-kubernetes-preserve-unknown-fields: true
           kind:
             description: |-
               Kind is a string value representing the REST resource this object represents.
@@ -181,24 +172,13 @@ spec:
                   type: object
                 type: array
               filebrowser:
-                description: |-
-                  BoolOrString is a custom type that can hold either a boolean or a string value.
-                  This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
-
-                  Example usages:
-                    filebrowser: true
-                    filebrowser: "true"
-                    filebrowser: "some-placeholder"
-                type: object
+                x-kubernetes-preserve-unknown-fields: true
               game:
                 type: string
               image:
                 type: string
               ports:
                 items:
-                  description: |-
-                    GamePort defines networking ports.
-                    We use IntOrString for containerPort so that user can specify "25565" or 25565
                   properties:
                     containerPort:
                       anyOf:
@@ -347,24 +327,13 @@ spec:
                             type: object
                           type: array
                         filebrowser:
-                          description: |-
-                            BoolOrString is a custom type that can hold either a boolean or a string value.
-                            This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
-
-                            Example usages:
-                              filebrowser: true
-                              filebrowser: "true"
-                              filebrowser: "some-placeholder"
-                          type: object
+                          x-kubernetes-preserve-unknown-fields: true
                         image:
                           type: string
                         name:
                           type: string
                         ports:
                           items:
-                            description: |-
-                              GamePort defines networking ports.
-                              We use IntOrString for containerPort so that user can specify "25565" or 25565
                             properties:
                               containerPort:
                                 anyOf:
@@ -411,15 +380,7 @@ spec:
                             defaultSize:
                               type: string
                             enabled:
-                              description: |-
-                                BoolOrString is a custom type that can hold either a boolean or a string value.
-                                This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
-
-                                Example usages:
-                                  filebrowser: true
-                                  filebrowser: "true"
-                                  filebrowser: "some-placeholder"
-                              type: object
+                              x-kubernetes-preserve-unknown-fields: true
                           required:
                           - defaultSize
                           - enabled
@@ -455,15 +416,7 @@ spec:
                   defaultSize:
                     type: string
                   enabled:
-                    description: |-
-                      BoolOrString is a custom type that can hold either a boolean or a string value.
-                      This is modeled similarly to k8s.io/apimachinery/pkg/util/intstr.IntOrString but for booleans.
-
-                      Example usages:
-                        filebrowser: true
-                        filebrowser: "true"
-                        filebrowser: "some-placeholder"
-                    type: object
+                    x-kubernetes-preserve-unknown-fields: true
                 required:
                 - defaultSize
                 - enabled
