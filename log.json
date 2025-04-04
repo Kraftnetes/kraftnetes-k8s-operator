@@ -1,0 +1,68 @@
+{
+  "game": "minecraft",
+  "image": "${image}",
+  "filebrowser": "${fb}",
+  "storage": {
+    "enabled": true,
+    "defaultSize": "10Gi"
+  },
+  "ports": [
+    {
+      "name": "minecraft",
+      "containerPort": "${port}",
+      "protocol": "TCP",
+      "type": "HostPort"
+    }
+  ],
+  "env": [
+    {
+      "name": "EULA",
+      "value": "TRUE"
+    },
+    {
+      "name": "CREATE_CONSOLE_IN_PIPE",
+      "value": "true"
+    },
+    {
+      "name": "VERSION",
+      "value": "${version}"
+    }
+  ],
+  "profiles": {
+    "default": "vanilla",
+    "values": [
+      {
+        "name": "vanilla",
+        "filebrowser": false,
+        "ports": [
+          {
+            "name": "minecraft",
+            "containerPort": "${port}",
+            "protocol": "TCP",
+            "type": "NodePort"
+          }
+        ],
+        "env": [
+          {
+            "name": "VERSION",
+            "value": "1.21.5"
+          }
+        ]
+      },
+      {
+        "name": "vanilla-old",
+        "filebrowser": false,
+        "env": [
+          {
+            "name": "VERSION",
+            "value": "1.21.4"
+          },
+          {
+            "name": "test",
+            "value": "${version}"
+          }
+        ]
+      }
+    ]
+  }
+}

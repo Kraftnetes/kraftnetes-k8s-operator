@@ -150,8 +150,12 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 
 	// Perform substitution for all placeholders of the form &{variable}.
 	for key, value := range subs {
-		placeholder := "&{" + key + "}"
+		placeholder := "\"&{" + key + "}\""
+		fmt.Printf("place holder = %s" , placeholder)
+		fmt.Printf("result before: %s",specStr)
 		specStr = strings.ReplaceAll(specStr, placeholder, value)
+		fmt.Printf("result after: %s", specStr)
+
 	}
 
 	// Check if any unresolved placeholder remains.
