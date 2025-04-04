@@ -34,3 +34,16 @@ spec:
     limits:
       memory: 1400Mi
 ---
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameServer
+metadata:
+  name: minecraft-1
+spec:
+  game: minecraft
+  inputs:
+    image: itzg/minecraft-server:latest
+    fb: true
+    port: 25565
+  resources:
+    limits:
+      memory: 1400Mi
