@@ -79,16 +79,15 @@ func (r *GameServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // from defInputs (which contains default values). If a variable is required but neither provided nor defaulted,
 // or if any placeholder remains, an error is returned.
 func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[string]apiextensionsv1.JSON, defInputs map[string]v1alpha1.GameDefinitionInput) (v1alpha1.GameDefinitionSpec, error) {
-	// Marshal the spec to a JSON string.
+	// Marshal the spec to JSON string
 	rawBytes, err := json.Marshal(spec)
 	if err != nil {
 		return spec, fmt.Errorf("failed to marshal GameDefinition spec: %w", err)
 	}
 	specStr := string(rawBytes)
 
-	// Build substitution map.
+	// Build substitution map
 	subs := make(map[string]string)
-	// Loop over each input declared in the GameDefinition.
 	for key, input := range defInputs {
 		var value string
 		if gsInputs != nil {
@@ -96,96 +95,84 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 				value = jsonValueToString(j)
 			}
 		}
-		// --- If no value was provided by the GameServer, use the default if available.
+
+		// If no value from GameServer, use default
 		if value == "" {
 			var defaultStr string
 			switch input.Type {
 			case "string":
-					// Expect a default string.
-					if input.Default.Type == v1alpha1.AnyValString {
-							defaultStr = input.Default.StrVal
-					} else {
-							// If the default is not a string, fall back to its generic conversion.
-							defaultStr = input.Default.String()
-					}
-			case "number":
-					if input.Default.Type == v1alpha1.AnyValNumber {
-							defaultStr = strconv.FormatFloat(input.Default.NumVal, 'f', -1, 64)
-					} else if input.Default.Type == v1alpha1.AnyValString {
-							// Try to interpret the string as a number.
-							if num, err := strconv.ParseFloat(input.Default.StrVal, 64); err == nil {
-									defaultStr = strconv.FormatFloat(num, 'f', -1, 64)
-							} else {
-									return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
-							}
-					} else {
-							return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
-					}
-			case "boolean":
-					if input.Default.Type == v1alpha1.AnyValBool {
-							defaultStr = strconv.FormatBool(input.Default.BoolVal)
-					} else if input.Default.Type == v1alpha1.AnyValString {
-							// Try to interpret the string as a boolean.
-							if b, err := strconv.ParseBool(input.Default.StrVal); err == nil {
-									defaultStr = strconv.FormatBool(b)
-							} else {
-									return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
-							}
-					} else {
-							return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
-					}
-			default:
-					// Fallback: use AnyVal’s generic String() method.
+				if input.Default.Type == v1alpha1.AnyValString {
+					defaultStr = input.Default.StrVal
+				} else {
 					defaultStr = input.Default.String()
+				}
+			case "number":
+				if input.Default.Type == v1alpha1.AnyValNumber {
+					defaultStr = strconv.FormatFloat(input.Default.NumVal, 'f', -1, 64)
+				} else if input.Default.Type == v1alpha1.AnyValString {
+					if num, err := strconv.ParseFloat(input.Default.StrVal, 64); err == nil {
+						defaultStr = strconv.FormatFloat(num, 'f', -1, 64)
+					} else {
+						return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
+					}
+				} else {
+					return spec, fmt.Errorf("default value for variable %q is not a valid number", key)
+				}
+			case "boolean":
+				if input.Default.Type == v1alpha1.AnyValBool {
+					defaultStr = strconv.FormatBool(input.Default.BoolVal)
+				} else if input.Default.Type == v1alpha1.AnyValString {
+					if b, err := strconv.ParseBool(input.Default.StrVal); err == nil {
+						defaultStr = strconv.FormatBool(b)
+					} else {
+						return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
+					}
+				} else {
+					return spec, fmt.Errorf("default value for variable %q is not a valid boolean", key)
+				}
+			default:
+				defaultStr = input.Default.String()
 			}
 			if defaultStr == "" {
-					return spec, fmt.Errorf("variable %q is required but not provided and no default is available", key)
+				return spec, fmt.Errorf("variable %q is required but not provided and no default is available", key)
 			}
 			value = defaultStr
-	}
-	
-		// ---
+		}
+
 		subs[key] = value
 	}
 
-	// Perform substitution for all placeholders of the form &{variable}.
+	// Perform placeholder substitution: look for ${key}
 	for key, value := range subs {
-		placeholder := "\"&{" + key + "}\""
-		fmt.Printf("place holder = %s" , placeholder)
-		fmt.Println()
-		fmt.Printf("result before: %s",specStr)
-		fmt.Println()
-		fmt.Printf("value for %s : %s", placeholder ,value)
-		fmt.Println()
+		placeholder := "${" + key + "}"
+		fmt.Printf("[DEBUG] Replacing placeholder: %s -> value: %s\n", placeholder, value)
 		specStr = strings.ReplaceAll(specStr, placeholder, value)
-		fmt.Printf("result after: %s", specStr)
-		fmt.Println()
-
 	}
 
-	// Check if any unresolved placeholder remains.
-	if strings.Contains(specStr, "&{") {
+	// Check if any unresolved placeholders remain
+	if strings.Contains(specStr, "${") {
 		return spec, fmt.Errorf("unresolved variables remain in GameDefinition spec: %s", specStr)
 	}
 
-	// Unmarshal the resolved JSON back into a GameDefinitionSpec.
+	// Unmarshal back into GameDefinitionSpec
 	var resolvedSpec v1alpha1.GameDefinitionSpec
 	if err := json.Unmarshal([]byte(specStr), &resolvedSpec); err != nil {
 		return spec, fmt.Errorf("failed to unmarshal resolved GameDefinition spec: %w", err)
 	}
-	
-	fmt.Printf("RESOLVED RAW SPEC STRING = %s\n", specStr)
 
-	// Now marshal *resolvedSpec* again, back into JSON, and print that too:
+	// Debug prints: show fully resolved spec
+	fmt.Printf("[DEBUG] RESOLVED RAW SPEC STRING = %s\n", specStr)
+
 	resolvedBytes, err := json.Marshal(resolvedSpec)
 	if err != nil {
-		fmt.Printf("Failed to marshal resolvedSpec for debug print: %v\n", err)
+		fmt.Printf("[DEBUG] Failed to marshal resolvedSpec for debug print: %v\n", err)
 	} else {
-		fmt.Printf("RESOLVED OBJECT (marshalled back to JSON) = %s\n", string(resolvedBytes))
+		fmt.Printf("[DEBUG] RESOLVED OBJECT (marshalled back to JSON) = %s\n", string(resolvedBytes))
 	}
 
 	return resolvedSpec, nil
 }
+
 
 // jsonValueToString converts an apiextensionsv1.JSON value to its string representation.
 func jsonValueToString(j apiextensionsv1.JSON) string {
