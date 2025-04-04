@@ -9,10 +9,10 @@ import (
 // GameDefinitionInput defines an input variable for a GameDefinition.
 // The Default field can be a string, number, or bool.
 type GameDefinitionInput struct {
-	Required    bool                 `json:"required"`
-	Default     apiextensionsv1.JSON `json:"default"`
-	Description string               `json:"description"`
-	Type        string               `json:"type"`
+	Required    bool                 `json:"required,omitempty" default:"false"`
+	Default     apiextensionsv1.JSON `json:"default,omitempty"`
+	Description string               `json:"description,omitempty"`
+	Type        string               `json:"type,omitempty" default:"string"`
 }
 
 // GameDefinitionSpec defines the desired state of GameDefinition
@@ -63,8 +63,8 @@ type GameProfiles struct {
 // GameProfile defines an override profile for a GameDefinition.
 type GameProfile struct {
 	Name            string           `json:"name"`
-	Image           string           `json:"image"`
-	FileBrowser     bool             `json:"filebrowser,omitempty" default:"false"`
+	Image           string           `json:"image,omitempty"`
+	FileBrowser     bool             `json:"filebrowser,omitempty" default:"false"` //this is probably a bug which would disable file browser
 	StopStrategy    *StopStrategy    `json:"stopStrategy,omitempty"`
 	RestartStrategy *RestartStrategy `json:"restartStrategy,omitempty"`
 	Storage         *StorageConfig   `json:"storage,omitempty"`

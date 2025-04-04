@@ -40,11 +40,6 @@ spec:
                   type: boolean
                 type:
                   type: string
-              required:
-              - default
-              - description
-              - required
-              - type
               type: object
             description: Inputs defines the input variables for the GameDefinition.
             type: object
@@ -393,7 +388,6 @@ spec:
                           - enabled
                           type: object
                       required:
-                      - image
                       - name
                       type: object
                     type: array

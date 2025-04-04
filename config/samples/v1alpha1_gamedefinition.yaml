@@ -148,5 +148,5 @@ spec:
         env:
           - name: VERSION
             value: '1.21.4'
-          - test:
+          - name: test
             value: ${version}
