@@ -75,32 +75,3 @@ func (r *GameServerReconciler) reconcileService(ctx context.Context, gs *v1alpha
 	logger.Info("Created Service", "name", service.Name)
 	return ctrl.Result{}, nil
 }
-
-/*
-
-service = &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceName,
-			Namespace: gs.Namespace,
-			Labels: map[string]string{
-				"app":        "gameserver",
-				"gameserver": gs.Name,
-			},
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"app":        "gameserver",
-				"gameserver": gs.Name,
-			},
-			Ports: []corev1.ServicePort{{
-				Name:       "minecraft",
-				Port:       25565,
-				TargetPort: intstr.FromInt(25565),
-				Protocol:   corev1.ProtocolTCP,
-				NodePort:   0,
-			}},
-			Type: corev1.ServiceTypeNodePort,
-		},
-	}
-
-*/
