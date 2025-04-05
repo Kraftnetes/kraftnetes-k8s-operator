@@ -1,0 +1,47 @@
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameDefinition
+metadata:
+  name: minecraft
+  annotations:
+    kraftnetes.com/allow-set-env-var: "false"
+
+inputs:
+  version:
+    required: true
+    default: 1.21.5
+    description: Minecraft Version
+    type: string
+
+  image:
+    required: false
+    description: Minecraft server image
+    type: string
+    default: itzg/minecraft-server:latest
+
+spec:
+  game: minecraft
+  image: ${image}
+  filebrowser: true
+  storage:
+    enabled: true
+    defaultSize: 10Gi
+
+  ports:
+    - name: minecraft
+      containerPort: 25565
+      protocol: TCP
+      type: HostPort
+  
+  env:
+    - name: EULA
+      value: "TRUE"
+    - name: CREATE_CONSOLE_IN_PIPE
+      value: 'true'
+    - name: VERSION
+      value: ${version}
+  profiles:
+    values:
+      - name: paper
+        env:
+          - name: TYPE
+            value: 'PAPER'

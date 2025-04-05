@@ -47,3 +47,13 @@ spec:
   resources:
     limits:
       memory: 1400Mi
+---
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameServer
+metadata:
+  name: minecraft-1
+spec:
+  game: minecraft
+  resources:
+    limits:
+      memory: 1400Mi

@@ -49,6 +49,12 @@ jobs:
           rm -rf ./kraftnetes-gitops/infra/kraftnetes-operator/crd
           mkdir -p ./kraftnetes-gitops/infra/kraftnetes-operator/crd
           cp -r ./config/crd/* ./kraftnetes-gitops/infra/kraftnetes-operator/crd/
+      
+      - name: Update sample mc game definition
+        run: |
+          rm -rf ./kraftnetes-gitops/infra/kraftnetes-operator/game-definitions
+          mkdir -p ./kraftnetes-gitops/infra/kraftnetes-operator/game-definitions
+          cp -r ./config/samples/game-def-bundle/* ./kraftnetes-gitops/infra/kraftnetes-operator/game-definitions
 
       - name: Update the tag in the GitOps Repository
         run: |
