@@ -58,7 +58,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 		fileBrowserEnabled = *gs.Spec.Filebrowser
 	}
 	if fileBrowserEnabled {
-		containers = append(containers, buildFileBrowserContainer())
+		containers = append(containers, buildFileBrowserContainer(id))
 	}
 
 	// Build volumes if storage is enabled.
@@ -132,7 +132,7 @@ func buildGameContainer(mergedConfig v1alpha1.GameDefinitionSpec, finalEnv []cor
 }
 
 // buildFileBrowserContainer returns the container spec for the file browser.
-func buildFileBrowserContainer() corev1.Container {
+func buildFileBrowserContainer(id string) corev1.Container {
 	return corev1.Container{
 		Name:  "filebrowser",
 		Image: "filebrowser/filebrowser",
@@ -142,7 +142,7 @@ func buildFileBrowserContainer() corev1.Container {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Args: []string{"--port", "8077"},
+		Args: []string{"--port", "8077", "--baseurl", "/files/"+id},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "game-data",
