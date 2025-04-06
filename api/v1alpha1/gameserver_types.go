@@ -13,7 +13,6 @@ type GameServerSpec struct {
 	Inputs      map[string]apiextensionsv1.JSON `json:"inputs,omitempty"`
 	VolumeSize  string                          `json:"volumeSize,omitempty"`
 	Filebrowser *bool                           `json:"filebrowser,omitempty"`
-	Console     *bool                           `json:"console,omitempty"`
 	Env         []corev1.EnvVar                 `json:"env,omitempty"`
 	Resources   corev1.ResourceRequirements     `json:"resources,omitempty"`
 }

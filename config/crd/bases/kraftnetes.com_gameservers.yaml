@@ -39,8 +39,6 @@ spec:
           spec:
             description: GameServerSpec defines the desired state of GameServer
             properties:
-              console:
-                type: boolean
               env:
                 items:
                   description: EnvVar represents an environment variable present in
