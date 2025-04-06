@@ -21,8 +21,9 @@ import (
 // and finally creates the Pod while setting proper owner references.
 func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.GameServer, gameDef *v1alpha1.GameDefinition) (ctrl.Result, error) {
 	logger := log.FromContext(ctx)
-	podName := fmt.Sprintf("gs-%s-pod", gs.Name)
-	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
+	id := ResolveGameServerId(gs)
+	podName := fmt.Sprintf("gs-%s-pod", id)
+	pvcName := fmt.Sprintf("gs-%s-pvc", id)
 
 	// Check if the Pod already exists.
 	pod, err := r.getExistingPod(ctx, podName, gs.Namespace)
@@ -74,6 +75,7 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 			Labels: map[string]string{
 				"app":        "gameserver",
 				"gameserver": gs.Name,
+				"kraftnetes-id": gs.Labels["kraftnetes-id"],
 			},
 		},
 		Spec: podSpec,

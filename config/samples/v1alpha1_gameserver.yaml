@@ -54,6 +54,25 @@ metadata:
   name: minecraft-1
 spec:
   game: minecraft
+  env:
+    - name: JAVA_OPTS
+      value: "-Xmx1536m -Xms1536m"
   resources:
     limits:
       memory: 1400Mi
+---
+apiVersion: kraftnetes.com/v1alpha1
+kind: GameServer
+metadata:
+  name: minecraft-1
+spec:
+  game: minecraft
+  profile: paper
+  inputs:
+    version: 1.21.4
+  env:
+    - name: JAVA_OPTS
+      value: "-Xmx1536m -Xms1536m"
+  resources:
+    limits:
+      memory: 2000Mi

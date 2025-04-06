@@ -25,7 +25,8 @@ func (r *GameServerReconciler) reconcileService(ctx context.Context, gs *v1alpha
 		return ctrl.Result{}, nil
 	}
 
-	serviceName := fmt.Sprintf("gs-%s-filebrowser-service", gs.Name)
+	id := ResolveGameServerId(gs);
+	serviceName := fmt.Sprintf("gs-%s-filebrowser-service", id)
 
 	service := &corev1.Service{}
 	if err := r.Get(ctx, types.NamespacedName{Name: serviceName, Namespace: gs.Namespace}, service); err == nil {

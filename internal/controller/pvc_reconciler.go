@@ -24,7 +24,8 @@ func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.Ga
 		return ctrl.Result{}, nil
 	}
 
-	pvcName := fmt.Sprintf("gs-%s-pvc", gs.Name)
+	id := ResolveGameServerId(gs);
+	pvcName := fmt.Sprintf("gs-%s-pvc", id)
 
 	pvc := &corev1.PersistentVolumeClaim{}
 	if err := r.Get(ctx, types.NamespacedName{Name: pvcName, Namespace: gs.Namespace}, pvc); err == nil {

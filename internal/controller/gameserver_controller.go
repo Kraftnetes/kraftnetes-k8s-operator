@@ -74,6 +74,14 @@ func (r *GameServerReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	return ctrl.Result{}, nil
 }
 
+func ResolveGameServerId(gs *v1alpha1.GameServer) string {
+	id, ok := gs.Labels["kraftnetes-id"]
+	if !ok || id == "" {
+		id = gs.Name
+	}
+	return id;
+}
+
 // resolveGameDefinitionSpec performs a generic substitution on the entire GameDefinitionSpec.
 // It replaces every occurrence of &{variable} with the corresponding value from gsInputs or, if absent,
 // from defInputs (which contains default values). If a variable is required but neither provided nor defaulted,
@@ -144,18 +152,18 @@ func resolveGameDefinitionSpec(spec v1alpha1.GameDefinitionSpec, gsInputs map[st
 
 	// Perform placeholder substitution: look for ${key}
 	for key, value := range subs {
-    placeholder := "${" + key + "}"
-    fmt.Printf("[DEBUG] Replacing placeholder: %s -> value: %s\n", placeholder, value)
+		placeholder := "${" + key + "}"
+		fmt.Printf("[DEBUG] Replacing placeholder: %s -> value: %s\n", placeholder, value)
 
-    // Detect if value looks like boolean or number
-    if value == "true" || value == "false" || isNumeric(value) {
-        // Replace placeholder without quotes
-        specStr = strings.ReplaceAll(specStr, "\""+placeholder+"\"", value)
-    } else {
-        // Replace normally
-        specStr = strings.ReplaceAll(specStr, placeholder, value)
-    }
-}
+		// Detect if value looks like boolean or number
+		if value == "true" || value == "false" || isNumeric(value) {
+			// Replace placeholder without quotes
+			specStr = strings.ReplaceAll(specStr, "\""+placeholder+"\"", value)
+		} else {
+			// Replace normally
+			specStr = strings.ReplaceAll(specStr, placeholder, value)
+		}
+	}
 
 	// Check if any unresolved placeholders remain
 	if strings.Contains(specStr, "${") {
@@ -185,7 +193,6 @@ func isNumeric(s string) bool {
 	_, err := strconv.ParseFloat(s, 64)
 	return err == nil
 }
-
 
 // jsonValueToString converts an apiextensionsv1.JSON value to its string representation.
 func jsonValueToString(j apiextensionsv1.JSON) string {
