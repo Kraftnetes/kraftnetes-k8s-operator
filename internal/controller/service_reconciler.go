@@ -19,7 +19,11 @@ func (r *GameServerReconciler) reconcileService(ctx context.Context, gs *v1alpha
 	
 	logger := log.FromContext(ctx)
 
-	if !gameDef.Spec.FileBrowser.BoolVal {
+	fileBrowserEnabled := gameDef.Spec.FileBrowser.BoolVal
+	if gs.Spec.Filebrowser != nil {
+		fileBrowserEnabled = *gs.Spec.Filebrowser
+	}
+	if !fileBrowserEnabled {
 		logger.Info("File browser disabled. Skipping creation of filebrowser service.", "gameName", gameDef.Name)
 		r.Recorder.Eventf(gs, corev1.EventTypeNormal, "Skipped creating filebrowser service for %s", gs.Name)
 		return ctrl.Result{}, nil
