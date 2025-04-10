@@ -24,7 +24,7 @@ func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.Ga
 		return ctrl.Result{}, nil
 	}
 
-	id := ResolveGameServerId(gs);
+	id := ResolveGameServerId(gs)
 	pvcName := fmt.Sprintf("gs-%s-pvc", id)
 
 	pvc := &corev1.PersistentVolumeClaim{}
@@ -36,10 +36,10 @@ func (r *GameServerReconciler) reconcilePvc(ctx context.Context, gs *v1alpha1.Ga
 		return ctrl.Result{}, err
 	}
 
-	defaultStorage := "10Gi" //hard coded default storage. can be overriden by game definition or game server 
+	defaultStorage := "10Gi" //hard coded default storage. can be overriden by game definition or game server
 
 	if gameDef.Spec.Storage.DefaultSize != "" {
-		defaultStorage = gameDef.Spec.Storage.DefaultSize;
+		defaultStorage = gameDef.Spec.Storage.DefaultSize
 	}
 
 	if gs.Spec.VolumeSize != "" {

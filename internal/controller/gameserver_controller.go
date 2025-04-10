@@ -79,7 +79,7 @@ func ResolveGameServerId(gs *v1alpha1.GameServer) string {
 	if !ok || id == "" {
 		id = gs.Name
 	}
-	return id;
+	return id
 }
 
 // resolveGameDefinitionSpec performs a generic substitution on the entire GameDefinitionSpec.

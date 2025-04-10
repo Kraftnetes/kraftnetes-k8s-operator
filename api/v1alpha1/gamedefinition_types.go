@@ -8,7 +8,7 @@ import (
 
 // GameDefinitionInput defines an input variable for a GameDefinition.
 type GameDefinitionInput struct {
-	Required    bool   `json:"required,omitempty" default:"false"`
+	Required bool `json:"required,omitempty" default:"false"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:validation:Schemaless
 	Default     AnyVal `json:"default,omitempty"`
@@ -49,8 +49,8 @@ type StorageConfig struct {
 // GameProfile defines an override profile for a GameDefinition.
 // Notice we use BoolOrString for filebrowser, so it can be `true` or `"somePlaceholder"`
 type GameProfile struct {
-	Name            string           `json:"name"`
-	Image           string           `json:"image,omitempty"`
+	Name  string `json:"name"`
+	Image string `json:"image,omitempty"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:validation:Schemaless
 	FileBrowser     BoolOrString     `json:"filebrowser,omitempty"`
@@ -69,8 +69,8 @@ type GameProfiles struct {
 
 // GameDefinitionSpec defines the desired state of GameDefinition
 type GameDefinitionSpec struct {
-	Game            string           `json:"game"`
-	Image           string           `json:"image"`
+	Game  string `json:"game"`
+	Image string `json:"image"`
 	// +kubebuilder:validation:XPreserveUnknownFields
 	// +kubebuilder:validation:Schemaless
 	FileBrowser     BoolOrString     `json:"filebrowser,omitempty"` // can be bool or string

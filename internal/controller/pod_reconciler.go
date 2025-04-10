@@ -73,8 +73,8 @@ func (r *GameServerReconciler) reconcilePod(ctx context.Context, gs *v1alpha1.Ga
 			Name:      podName,
 			Namespace: gs.Namespace,
 			Labels: map[string]string{
-				"app":        "gameserver",
-				"gameserver": gs.Name,
+				"app":           "gameserver",
+				"gameserver":    gs.Name,
 				"kraftnetes-id": gs.Labels["kraftnetes-id"],
 			},
 		},
@@ -142,7 +142,7 @@ func buildFileBrowserContainer(id string) corev1.Container {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		Args: []string{"--port", "8077", "--baseurl", "/files/"+id},
+		Args: []string{"--port", "8077", "--baseurl", "/files/" + id},
 		VolumeMounts: []corev1.VolumeMount{
 			{
 				Name:      "game-data",
